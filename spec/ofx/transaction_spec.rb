@@ -81,7 +81,7 @@ describe OFX::Transaction do
     it "should have type" do
       @transaction.type.should == :credit
     end
-    
+
     it "should have empty sic" do
       @transaction.sic.should == ''
     end
