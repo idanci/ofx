@@ -4,6 +4,7 @@ module OFX
       VERSION = "1.0.2"
 
       def self.parse_headers(header_text)
+        # TODO: refactor
         # Change single CR's to LF's to avoid issues with some banks
         header_text.gsub!(/\r(?!\n)/, "\n")
 
