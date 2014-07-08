@@ -2,28 +2,28 @@ require "spec_helper"
 
 describe OFX::Parser do
   before do
-    @ofx = OFX::Parser::Base.new("spec/fixtures/sample.ofx")
+    @ofx = OFX::Parser::Base.new("spec/fixtures/v102.ofx")
   end
 
   it "should accept file path" do
-    @ofx = OFX::Parser::Base.new("spec/fixtures/sample.ofx")
+    @ofx = OFX::Parser::Base.new("spec/fixtures/v102.ofx")
     @ofx.content.should_not be_nil
   end
 
   it "should accept file handler" do
-    file = open("spec/fixtures/sample.ofx")
+    file = open("spec/fixtures/v102.ofx")
     @ofx = OFX::Parser::Base.new(file)
     @ofx.content.should_not be_nil
   end
 
   it "should accept file content" do
-    file = open("spec/fixtures/sample.ofx").read
+    file = open("spec/fixtures/v102.ofx").read
     @ofx = OFX::Parser::Base.new(file)
     @ofx.content.should_not be_nil
   end
 
   it "should set content" do
-    @ofx.content.should == open("spec/fixtures/sample.ofx").read
+    @ofx.content.should == open("spec/fixtures/v102.ofx").read
   end
 
   it "should work with UTF8 and Latin1 encodings" do
@@ -96,7 +96,7 @@ describe OFX::Parser do
 
   def ofx_with_carriage_return
     header = %{OFXHEADER:100\rDATA:OFXSGML\rVERSION:102\rSECURITY:NONE\rENCODING:USASCII\rCHARSET:1252\rCOMPRESSION:NONE\rOLDFILEUID:NONE\rNEWFILEUID:NONE\r}
-    body   = open("spec/fixtures/sample.ofx").read.split(/<OFX>/, 2)[1]
+    body   = open("spec/fixtures/v102.ofx").read.split(/<OFX>/, 2)[1]
     header + "<OFX>" + body
   end
 end

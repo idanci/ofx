@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe OFX::Transaction do
   before do
-    @ofx = OFX::Parser::Base.new("spec/fixtures/sample.ofx")
+    @ofx = OFX::Parser::Base.new("spec/fixtures/v102.ofx")
     @parser = @ofx.parser
     @account = @parser.account
   end

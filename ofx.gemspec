@@ -16,7 +16,7 @@ Currently supports OFX 102, 200 and 211.
 
 Usage:
 
-  OFX("sample.ofx") do |ofx|
+  OFX("v102.ofx") do |ofx|
     p ofx
   end
 TXT
