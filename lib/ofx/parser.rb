@@ -39,10 +39,17 @@ module OFX
       private
       def prepare(content)
         # split headers & body
-        header_text, body = content.dup.split(/<OFX>/, 2)
+        header_text, body_text = content.dup.split(/<OFX>/, 2)
 
-        raise OFX::UnsupportedFileError unless body
+        raise OFX::UnsupportedFileError unless body_text
 
+        headers = extract_headers(header_text)
+        body    = extract_body(body_text)
+
+        [headers, body]
+      end
+
+      def extract_headers(header_text)
         # Header format is different between versions. Give each
         # parser a chance to parse the headers.
         headers = nil
@@ -52,13 +59,15 @@ module OFX
           break if headers
         end
 
-        # Replace body tags to parse it with Nokogiri
-        body.gsub!(/>\s+</m, "><")
-        body.gsub!(/\s+</m, "<")
-        body.gsub!(/>\s+/m, ">")
-        body.gsub!(/<(\w+?)>([^<]+)/m, '<\1>\2</\1>')
+        headers
+      end
 
-        [headers, body]
+      def extract_body(body_text)
+        # Replace body tags to parse it with Nokogiri
+        body_text.gsub!(/>\s+</m, "><")
+        body_text.gsub!(/\s+</m, "<")
+        body_text.gsub!(/>\s+/m, ">")
+        body_text.gsub!(/<(\w+?)>([^<]+)/m, '<\1>\2</\1>')
       end
 
       def convert_to_utf8(string)

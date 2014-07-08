@@ -100,17 +100,15 @@ module OFX
       end
 
       def build_available_balance
-        if html.search("availbal").size > 0
-          amount = html.search("availbal > balamt").inner_text.to_f
+        return nil unless html.search("availbal").size > 0
 
-          OFX::Balance.new({
-            :amount => amount,
-            :amount_in_pennies => (amount * 100).to_i,
-            :posted_at => build_date(html.search("availbal > dtasof").inner_text)
-          })
-        else
-          return nil
-        end
+        amount = html.search("availbal > balamt").inner_text.to_f
+
+        OFX::Balance.new({
+          :amount => amount,
+          :amount_in_pennies => (amount * 100).to_i,
+          :posted_at => build_date(html.search("availbal > dtasof").inner_text)
+        })
       end
     end
   end
