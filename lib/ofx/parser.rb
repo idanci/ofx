@@ -72,7 +72,7 @@ module OFX
 
       def convert_to_utf8(string)
         return string if Kconv.isutf8(string)
-        string.encode("UTF-8", "ISO-8859-1")
+        string.encode(Encoding::UTF_8.to_s, Encoding::ISO_8859_1.to_s)
       end
     end
   end
