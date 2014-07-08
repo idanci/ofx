@@ -7,3 +7,17 @@ RSpec::Matchers.define :have_key do |key|
     hash.keys.include?(key)
   end
 end
+
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+
+   config.mock_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+
+  config.order = "random"
+  config.raise_errors_for_deprecations!
+end
+
