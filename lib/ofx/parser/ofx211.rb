@@ -1,6 +1,6 @@
 module OFX
   module Parser
-    class OFX211 < OFX102
+    class OFX211 < BaseParser
       VERSION = "2.1.1"
 
       def self.parse_headers(header_text)
@@ -29,11 +29,6 @@ module OFX
           headers[k] = v
         end
         headers
-      end
-
-      def self.strip_quotes(s)
-        return unless s
-        s.sub(/^"(.*)"$/, '\1')
       end
     end
   end

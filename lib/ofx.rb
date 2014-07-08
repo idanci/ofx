@@ -6,6 +6,7 @@ require "kconv"
 
 require "ofx/errors"
 require "ofx/parser"
+require "ofx/parser/base"
 require "ofx/parser/ofx102"
 require "ofx/parser/ofx211"
 require "ofx/foundation"
