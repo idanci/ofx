@@ -1,17 +1,15 @@
 require "spec_helper"
 
 describe OFX::Parser::OFX102 do
-  before do
-    @ofx = OFX::Parser::Base.new("spec/fixtures/v102.ofx")
-    @parser = @ofx.parser
-  end
+  let(:ofx)    { OFX::Parser::Base.new("spec/fixtures/v102.ofx") }
+  let(:parser) { ofx.parser }
 
   it "should have a version" do
     OFX::Parser::OFX102::VERSION.should == "1.0.2"
   end
 
   it "should set headers" do
-    @parser.headers.should == @ofx.headers
+    parser.headers.should == ofx.headers
   end
 
   it "should trim trailing whitespace from headers" do
@@ -20,15 +18,15 @@ describe OFX::Parser::OFX102 do
   end
 
   it "should set body" do
-    @parser.body.should == @ofx.body
+    parser.body.should == ofx.body
   end
 
   it "should set account" do
-    @parser.account.should be_a_kind_of(OFX::Account)
+    parser.account.should be_a_kind_of(OFX::Account)
   end
 
   it "should set account" do
-    @parser.sign_on.should be_a_kind_of(OFX::SignOn)
+    parser.sign_on.should be_a_kind_of(OFX::SignOn)
   end
 
   it "should know about all transaction types" do
@@ -42,5 +40,4 @@ describe OFX::Parser::OFX102 do
       transaction_type.downcase.to_sym.should equal OFX::Parser::OFX102::TRANSACTION_TYPES[transaction_type]
     end
   end
-
 end

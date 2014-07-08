@@ -7,5 +7,17 @@ module OFX
     attr_accessor :transactions
     attr_accessor :type
     attr_accessor :available_balance
+
+    def to_hash
+      {
+        :balance           => balance.to_hash,
+        :bank_id           => bank_id,
+        :currency          => currency,
+        :id                => id,
+        :transactions      => transactions.map(&:to_hash),
+        :type              => type,
+        :available_balance => available_balance.to_hash
+      }
+    end
   end
 end
