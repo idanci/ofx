@@ -11,6 +11,7 @@ module OFX
     attr_accessor :ref_number
     attr_accessor :type
     attr_accessor :sic
+    attr_accessor :account_id
 
     def to_hash
       {
@@ -24,7 +25,8 @@ module OFX
         :posted_at          => posted_at,
         :ref_number         => ref_number,
         :type               => type,
-        :sic                => sic
+        :sic                => sic,
+        :account_id         => account_id
       }
     end
   end

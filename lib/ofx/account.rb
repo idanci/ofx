@@ -16,7 +16,7 @@ module OFX
         :id                => id,
         :transactions      => transactions.map(&:to_hash),
         :type              => type,
-        :available_balance => available_balance.to_hash
+        :available_balance => available_balance ? available_balance.to_hash : nil
       }
     end
   end

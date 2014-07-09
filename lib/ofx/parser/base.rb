@@ -20,8 +20,28 @@ module OFX
         @html = Nokogiri::HTML.parse(body)
       end
 
+      def bank_accounts
+        @bank_accounts ||= build_bank_account
+      end
+
+      def credit_cards
+        @credit_cards ||= build_credit_card
+      end
+
+      def accounts
+        return @accounts if @accounts
+        @accounts = OFX::Accounts.new
+
+        (bank_accounts + credit_cards).each do |account|
+          @accounts << account
+        end
+
+        @accounts
+      end
+
       def account
-        @account ||= build_account
+        # fallback to not break interface
+        accounts.first
       end
 
       def sign_on
@@ -29,16 +49,56 @@ module OFX
       end
 
       private
-      def build_account
-        OFX::Account.new({
-          :bank_id           => html.search("bankacctfrom > bankid").inner_text,
-          :id                => html.search("bankacctfrom > acctid, ccacctfrom > acctid").inner_text,
-          :type              => ACCOUNT_TYPES[html.search("bankacctfrom > accttype").inner_text.to_s.upcase],
-          :transactions      => build_transactions,
-          :balance           => build_balance,
-          :available_balance => build_available_balance,
-          :currency          => html.search("bankmsgsrsv1 > stmttrnrs > stmtrs > curdef, " +
-                                            "creditcardmsgsrsv1 > ccstmttrnrs > ccstmtrs > curdef").inner_text
+
+      def build_bank_account
+        html.search("stmttrnrs").each_with_object([]) do |account, list|
+          account_id = account.search("bankacctfrom > acctid").inner_text
+
+          list << OFX::Account.new({
+            :bank_id           => account.search("bankacctfrom > bankid").inner_text,
+            :id                => account_id,
+            :type              => ACCOUNT_TYPES[account.search("bankacctfrom > accttype").inner_text.to_s.upcase],
+            :transactions      => build_transactions(account.search("banktranlist > stmttrn"), account_id),
+            :balance           => build_balance(account),
+            :available_balance => build_available_balance(account),
+            :currency          => account.search("stmtrs > curdef").inner_text
+          })
+        end
+      end
+
+      def build_credit_card
+        html.search("ccstmttrnrs").each_with_object([]) do |account, list|
+          account_id   = account.search("ccstmtrs > ccacctfrom > acctid").inner_text
+
+          list << OFX::Account.new({
+            :id           => account_id,
+            :transactions => build_transactions(account.search("banktranlist > stmttrn"), account_id),
+            :balance      => build_balance(account),
+            :currency     => account.search("ccstmtrs > curdef").inner_text
+          })
+        end
+      end
+
+      def build_transactions(transactions, account_id)
+        transactions.each_with_object([]) do |transaction, transactions|
+          transactions << build_transaction(transaction, account_id)
+        end
+      end
+
+      def build_transaction(transaction, account_id)
+        OFX::Transaction.new({
+          :amount            => build_amount(transaction),
+          :amount_in_pennies => (build_amount(transaction) * 100).to_i,
+          :fit_id            => transaction.search("fitid").inner_text,
+          :memo              => transaction.search("memo").inner_text,
+          :name              => transaction.search("name").inner_text,
+          :payee             => transaction.search("payee").inner_text,
+          :check_number      => transaction.search("checknum").inner_text,
+          :ref_number        => transaction.search("refnum").inner_text,
+          :posted_at         => build_date(transaction.search("dtposted").inner_text),
+          :type              => build_type(transaction),
+          :sic               => transaction.search("sic").inner_text,
+          :account_id        => account_id
         })
       end
 
@@ -47,28 +107,6 @@ module OFX
           :language          => html.search("signonmsgsrsv1 > sonrs > language").inner_text,
           :fi_id             => html.search("signonmsgsrsv1 > sonrs > fi > fid").inner_text,
           :fi_name           => html.search("signonmsgsrsv1 > sonrs > fi > org").inner_text
-        })
-      end
-
-      def build_transactions
-        html.search("banktranlist > stmttrn").collect do |element|
-          build_transaction(element)
-        end
-      end
-
-      def build_transaction(element)
-        OFX::Transaction.new({
-          :amount            => build_amount(element),
-          :amount_in_pennies => (build_amount(element) * 100).to_i,
-          :fit_id            => element.search("fitid").inner_text,
-          :memo              => element.search("memo").inner_text,
-          :name              => element.search("name").inner_text,
-          :payee             => element.search("payee").inner_text,
-          :check_number      => element.search("checknum").inner_text,
-          :ref_number        => element.search("refnum").inner_text,
-          :posted_at         => build_date(element.search("dtposted").inner_text),
-          :type              => build_type(element),
-          :sic               => element.search("sic").inner_text
         })
       end
 
@@ -89,25 +127,25 @@ module OFX
         Time.parse(date)
       end
 
-      def build_balance
-        amount = html.search("ledgerbal > balamt").inner_text.to_f
+      def build_balance(account)
+        amount = account.search("ledgerbal > balamt").inner_text.to_f
 
         OFX::Balance.new({
           :amount => amount,
           :amount_in_pennies => (amount * 100).to_i,
-          :posted_at => build_date(html.search("ledgerbal > dtasof").inner_text)
+          :posted_at => build_date(account.search("ledgerbal > dtasof").inner_text)
         })
       end
 
-      def build_available_balance
-        return nil unless html.search("availbal").size > 0
+      def build_available_balance(account)
+        return nil unless account.search("availbal").size > 0
 
-        amount = html.search("availbal > balamt").inner_text.to_f
+        amount = account.search("availbal > balamt").inner_text.to_f
 
         OFX::Balance.new({
           :amount => amount,
           :amount_in_pennies => (amount * 100).to_i,
-          :posted_at => build_date(html.search("availbal > dtasof").inner_text)
+          :posted_at => build_date(account.search("availbal > dtasof").inner_text)
         })
       end
     end

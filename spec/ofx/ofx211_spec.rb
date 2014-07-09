@@ -25,12 +25,10 @@ describe OFX::Parser::OFX211 do
   end
 
   context "transactions" do
-    let(:transactions) { parser.account.transactions }
-
     # Test file contains only three transactions. Let's just check
     # them all.
     context "first" do
-      let(:t) { transactions[0] }
+      let(:t) { parser.accounts.first.transactions[0] }
 
       it "should contain the correct values" do
         t.amount.should == -80
@@ -42,7 +40,7 @@ describe OFX::Parser::OFX211 do
     end
 
     context "second" do
-      let(:t) { transactions[1] }
+      let(:t) { parser.accounts.last.transactions[0] }
 
       it "should contain the correct values" do
         t.amount.should == -23
@@ -54,7 +52,7 @@ describe OFX::Parser::OFX211 do
     end
 
     context "third" do
-      let(:t) { transactions[2] }
+      let(:t) { parser.accounts.last.transactions[1] }
 
       it "should contain the correct values" do
         t.amount.should == 350
