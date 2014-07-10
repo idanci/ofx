@@ -59,6 +59,7 @@ module OFX
           break if headers
         end
 
+        raise OFX::UnsupportedFileError if headers.empty?
         headers
       end
 
