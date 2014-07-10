@@ -9,17 +9,17 @@ describe OFX::SignOn do
   describe "sign_on" do
     it "should return language" do
       sign_on.language.should == "ENG"
-      hash[:language].should == "ENG"
+      hash[:language].should == sign_on.language
     end
 
     it "should return Financial Institution ID" do
       sign_on.fi_id.should == "24909"
-      hash[:fi_id].should == "24909"
+      hash[:fi_id].should == sign_on.fi_id
     end
 
     it "should return Financial Institution Name" do
       sign_on.fi_name.should == "Citigroup"
-      hash[:fi_name].should == "Citigroup"
+      hash[:fi_name].should == sign_on.fi_name
     end
 
     context "#to_hash" do

@@ -10,17 +10,17 @@ describe OFX::Balance do
   describe "balance" do
     it "should return amount" do
       balance.amount.should == 598.44
-      hash[:amount].should == 598.44
+      hash[:amount].should == balance.amount
     end
 
     it "should return amount_in_pennies" do
       balance.amount_in_pennies.should == 59844
-      hash[:amount_in_pennies].should == 59844
+      hash[:amount_in_pennies].should == balance.amount_in_pennies
     end
 
     it "should return posted_at" do
       balance.posted_at.should == Time.parse("2009-11-01")
-      hash[:posted_at].should == Time.parse("2009-11-01")
+      hash[:posted_at].should == balance.posted_at
     end
 
     context "#to_hash" do
