@@ -138,6 +138,7 @@ module OFX
       end
 
       def build_balance(account)
+        return nil unless account.search("ledgerbal > balamt").size > 0
         amount = account.search("ledgerbal > balamt").inner_text.to_f
 
         OFX::Balance.new({
