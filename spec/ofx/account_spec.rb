@@ -69,7 +69,7 @@ describe OFX::Account do
 
         it "should return nil if AVAILBAL not found" do
           ofx     = OFX::Parser::Base.new("spec/fixtures/utf8.ofx")
-          account = ofx.parser.account
+          account = ofx.parser.accounts.first
           account.available_balance.should be_nil
         end
       end

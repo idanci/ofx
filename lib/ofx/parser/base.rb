@@ -10,14 +10,13 @@ module OFX
         'FEE', 'INT', 'OTHER', 'PAYMENT', 'POS', 'REPEATPMT', 'SRVCHG', 'XFER'
       ].inject({}) { |hash, tran_type| hash[tran_type] = tran_type.downcase.to_sym; hash }
 
-      attr_reader :headers
-      attr_reader :body
-      attr_reader :html
+      attr_reader :headers, :body, :html, :errors
 
       def initialize(options = {})
         @headers = options[:headers]
-        @body = options[:body]
-        @html = Nokogiri::HTML.parse(body)
+        @body    = options[:body]
+        @html    = Nokogiri::HTML.parse(body)
+        @errors  = []
       end
 
       def bank_accounts
@@ -39,11 +38,6 @@ module OFX
         @accounts
       end
 
-      def account
-        # fallback to not break interface
-        accounts.first
-      end
-
       def sign_on
         @sign_on ||= build_sign_on
       end
@@ -52,36 +46,48 @@ module OFX
 
       def build_bank_account
         html.search("stmttrnrs").each_with_object([]) do |account, list|
-          account_id = account.search("bankacctfrom > acctid").inner_text
+          begin
+            account_id = account.search("bankacctfrom > acctid").inner_text
 
-          list << OFX::Account.new({
-            :bank_id           => account.search("bankacctfrom > bankid").inner_text,
-            :id                => account_id,
-            :type              => ACCOUNT_TYPES[account.search("bankacctfrom > accttype").inner_text.to_s.upcase],
-            :transactions      => build_transactions(account.search("banktranlist > stmttrn"), account_id),
-            :balance           => build_balance(account),
-            :available_balance => build_available_balance(account),
-            :currency          => account.search("stmtrs > curdef").inner_text
-          })
+            list << OFX::Account.new({
+              :bank_id           => account.search("bankacctfrom > bankid").inner_text,
+              :id                => account_id,
+              :type              => ACCOUNT_TYPES[account.search("bankacctfrom > accttype").inner_text.to_s.upcase],
+              :transactions      => build_transactions(account.search("banktranlist > stmttrn"), account_id),
+              :balance           => build_balance(account),
+              :available_balance => build_available_balance(account),
+              :currency          => account.search("stmtrs > curdef").inner_text
+            })
+          rescue OFX::ParseError => error
+            errors << error
+          end
         end
       end
 
       def build_credit_card
         html.search("ccstmttrnrs").each_with_object([]) do |account, list|
-          account_id   = account.search("ccstmtrs > ccacctfrom > acctid").inner_text
+          begin
+            account_id = account.search("ccstmtrs > ccacctfrom > acctid").inner_text
 
-          list << OFX::Account.new({
-            :id           => account_id,
-            :transactions => build_transactions(account.search("banktranlist > stmttrn"), account_id),
-            :balance      => build_balance(account),
-            :currency     => account.search("ccstmtrs > curdef").inner_text
-          })
+            list << OFX::Account.new({
+              :id           => account_id,
+              :transactions => build_transactions(account.search("banktranlist > stmttrn"), account_id),
+              :balance      => build_balance(account),
+              :currency     => account.search("ccstmtrs > curdef").inner_text
+            })
+          rescue OFX::ParseError => error
+            errors << error
+          end
         end
       end
 
       def build_transactions(transactions, account_id)
         transactions.each_with_object([]) do |transaction, transactions|
-          transactions << build_transaction(transaction, account_id)
+          begin
+            transactions << build_transaction(transaction, account_id)
+          rescue OFX::ParseError => error
+            errors << error
+          end
         end
       end
 
@@ -116,6 +122,8 @@ module OFX
 
       def build_amount(element)
         BigDecimal.new(element.search("trnamt").inner_text)
+      rescue TypeError => error
+        raise OFX::ParseError.new(OFX::ParseError::AMOUNT)
       end
 
       def build_date(date)
@@ -125,6 +133,8 @@ module OFX
         date << "#{hour}:#{minutes}:#{seconds}" if hour && minutes && seconds
 
         Time.parse(date)
+      rescue TypeError, ArgumentError => error
+        raise OFX::ParseError.new(OFX::ParseError::TIME)
       end
 
       def build_balance(account)

@@ -3,7 +3,7 @@ require "spec_helper"
 describe OFX::Balance do
   let(:ofx)     { OFX::Parser::Base.new("spec/fixtures/v102.ofx") }
   let(:parser)  { ofx.parser }
-  let(:account) { parser.account }
+  let(:account) { parser.accounts.first }
   let(:balance) { account.balance }
   let(:hash)    { balance.to_hash }
 

@@ -3,7 +3,7 @@ require "spec_helper"
 describe OFX::Transaction do
   let(:ofx)     { OFX::Parser::Base.new("spec/fixtures/v102.ofx") }
   let(:parser)  { ofx.parser }
-  let(:account) { parser.account }
+  let(:account) { parser.accounts.first }
 
   context "debit" do
     let(:transaction) { account.transactions[0] }
@@ -132,7 +132,7 @@ describe OFX::Transaction do
   context "with other types" do
     let(:ofx)     { OFX::Parser::Base.new("spec/fixtures/bb.ofx") }
     let(:parser)  { ofx.parser }
-    let(:account) { parser.account }
+    let(:account) { parser.accounts.first }
 
     it "should return dep" do
       transaction = account.transactions[9]

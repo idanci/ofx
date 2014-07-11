@@ -1,4 +1,5 @@
 require "ofx"
+require "pry-byebug"
 
 RSpec::Matchers.define :have_key do |key|
   match do |hash|

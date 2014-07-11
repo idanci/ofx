@@ -16,11 +16,12 @@ describe OFX::Parser::OFX211 do
     parser.body.should == ofx.body
   end
 
-  it "should set account" do
-    parser.account.should be_a_kind_of(OFX::Account)
+  it "should set accounts" do
+    parser.accounts.should be_a_kind_of(Array)
+    parser.accounts.first.should be_a_kind_of(OFX::Account)
   end
 
-  it "should set account" do
+  it "should set sign_on" do
     parser.sign_on.should be_a_kind_of(OFX::SignOn)
   end
 
