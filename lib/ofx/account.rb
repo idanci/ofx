@@ -10,7 +10,7 @@ module OFX
 
     def to_hash
       {
-        :balance           => balance.to_hash,
+        :balance           => balance ? balance.to_hash : nil,
         :bank_id           => bank_id,
         :currency          => currency,
         :id                => id,
